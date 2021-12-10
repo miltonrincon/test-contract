@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract TestContract is ERC721, ERC721Enumerable, Ownable {
 	using Strings for uint256;
@@ -12,11 +13,14 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 	string public notRevealedUri;
 	bool public pausedFist = true;
 	bool public pausedPublic = true;
+	bool public pausedWhitelist = true;
 	bool public revealed = false;
 	uint256 public constant MAX_SUPPLY = 19999;
 	uint256 public constant MAX_PER_TRANSACTION = 100;
 	uint256 public PRICE_FIRST = 0.08 ether;
 	uint256 public PRICE_PUBLIC = 0.09 ether;
+	bytes32 public merkleRoot = 0x74f4666169faccda89a45d47ab1997a62f24c3cd534a01539db8f0e40d3eb8b1;
+	mapping(address => bool) public whitelistClaimed;
 	
 	function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721, ERC721Enumerable) {
 		super._beforeTokenTransfer(from, to, tokenId);
@@ -57,8 +61,16 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		pausedPublic = newState;
 	}
 	
+	function setPausedWhitelist(bool newState) public onlyOwner {
+		pausedWhitelist = newState;
+	}
+	
 	function setNotRevealedURI(string memory _notRevealedURI) public onlyOwner {
 		notRevealedUri = _notRevealedURI;
+	}
+	
+	function setMerkleRoot(bytes32 newMerkleRoot) public onlyOwner {
+		merkleRoot = newMerkleRoot;
 	}
 	
 	constructor(string memory _name,
@@ -94,8 +106,25 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		}
 	}
 	
+	function whitelistMint(bytes32[] calldata _merkleProof, uint256 numberOfTokens) public payable {
+		require(!whitelistClaimed[msg.sender], "Address has already claimed");
+		bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+		require(MerkleProof.verify(_merkleProof, merkleRoot, leaf), "Invalid Proof");
+		whitelistClaimed[msg.sender] = true;
+		uint256 totalSupply = totalSupply();
+		require(!pausedWhitelist, "Whitelist Paused");
+		require(numberOfTokens <= MAX_PER_TRANSACTION, "Exceeded max token purchase");
+		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
+		require(isValidPrice(numberOfTokens, PRICE_PUBLIC), "Ether values is not correct");
+		
+		for (uint256 i = 0; i < numberOfTokens; i++) {
+			_safeMint(msg.sender, totalSupply + i);
+		}
+	}
+	
+	
 	function isValidPrice(uint256 _amount, uint256 _price) internal returns (bool){
-		uint256 totalValue = _price + (0.06 ether * (_amount -1));
+		uint256 totalValue = _price + (0.06 ether * (_amount - 1));
 		return msg.value >= totalValue;
 	}
 	
