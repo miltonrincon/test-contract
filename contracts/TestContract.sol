@@ -11,7 +11,7 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 	string public baseUri;
 	string public baseExtension = ".json";
 	string public notRevealedUri;
-	bool public pausedFist = true;
+	bool public pausedFirst = true;
 	bool public pausedPublic = true;
 	bool public pausedWhitelist = true;
 	bool public revealed = false;
@@ -19,7 +19,7 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 	uint256 public constant MAX_PER_TRANSACTION = 100;
 	uint256 public PRICE_FIRST = 0.08 ether;
 	uint256 public PRICE_PUBLIC = 0.09 ether;
-	bytes32 public merkleRoot = 0x74f4666169faccda89a45d47ab1997a62f24c3cd534a01539db8f0e40d3eb8b1;
+	bytes32 public merkleRoot = 0x3bdb961dc6401a133fe06f9ee44234e370a4370107be5ce57d3ce488a4a392c4;
 	mapping(address => bool) public whitelistClaimed;
 	
 	function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721, ERC721Enumerable) {
@@ -53,8 +53,8 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		: "";
 	}
 	
-	function setPausedFist(bool newState) public onlyOwner {
-		pausedFist = newState;
+	function setPausedFirst(bool newState) public onlyOwner {
+		pausedFirst = newState;
 	}
 	
 	function setPausedPublic(bool newState) public onlyOwner {
