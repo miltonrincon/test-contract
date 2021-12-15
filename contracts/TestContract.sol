@@ -4,9 +4,11 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract TestContract is ERC721, ERC721Enumerable, Ownable {
 	using Strings for uint256;
+	using ECDSA for bytes32;
 	string public baseUri;
 	string public baseExtension = ".json";
 	string public notRevealedUri;
@@ -17,6 +19,7 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 	uint256 public constant MAX_PER_TRANSACTION = 30;
 	uint256 public PRICE_FIRST = 0.08 ether;
 	uint256 public PRICE_PUBLIC = 0.09 ether;
+	address internal signer;
 	
 	function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721, ERC721Enumerable) {
 		super._beforeTokenTransfer(from, to, tokenId);
@@ -61,12 +64,19 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		notRevealedUri = _notRevealedURI;
 	}
 	
+	function setSigner(address newSigner) public onlyOwner {
+		require(newSigner != address(0), "incorrect address");
+		signer = newSigner;
+	}
+	
 	constructor(string memory _name,
 		string memory _symbol,
+		address _signer,
 		string memory _initBaseURI,
 		string memory _initNotRevealedUri) ERC721(_name, _symbol) {
 		setBaseURI(_initBaseURI);
 		setNotRevealedURI(_initNotRevealedUri);
+		setSigner(_signer);
 	}
 	
 	function mint(uint numberOfTokens) public payable {
@@ -80,15 +90,20 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		}
 	}
 	
-	function whitelistMint(uint256 numberOfTokens) public payable {
+	function whitelistMint(uint256 numberOfTokens, bytes32 hash, bytes calldata _signature) public payable {
 		uint256 totalSupply = totalSupply();
 		require(!pausedWhitelist, "Whitelist Paused");
 		require(numberOfTokens <= MAX_PER_TRANSACTION, "Exceeded max token purchase");
 		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
 		require(isValidPrice(numberOfTokens, PRICE_FIRST), "Ether values is not correct");
+		require((recoverHash(hash, _signature) == signer), "Invalid Signature");
 		for (uint256 i = 0; i < numberOfTokens; i++) {
 			_safeMint(msg.sender, totalSupply + i);
 		}
+	}
+	
+	function recoverHash(bytes32 hash, bytes memory signature) internal pure returns (address _signer) {
+		return hash.recover(signature);
 	}
 	
 	function reserve(uint256 numberOfTokens) public onlyOwner {
