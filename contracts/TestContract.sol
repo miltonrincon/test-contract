@@ -4,23 +4,19 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract TestContract is ERC721, ERC721Enumerable, Ownable {
 	using Strings for uint256;
 	string public baseUri;
 	string public baseExtension = ".json";
 	string public notRevealedUri;
-	bool public pausedFirst = true;
-	bool public pausedPublic = true;
+	bool public paused = true;
 	bool public pausedWhitelist = true;
 	bool public revealed = false;
 	uint256 public constant MAX_SUPPLY = 19999;
-	uint256 public constant MAX_PER_TRANSACTION = 100;
+	uint256 public constant MAX_PER_TRANSACTION = 30;
 	uint256 public PRICE_FIRST = 0.08 ether;
 	uint256 public PRICE_PUBLIC = 0.09 ether;
-	bytes32 public merkleRoot = 0x3bdb961dc6401a133fe06f9ee44234e370a4370107be5ce57d3ce488a4a392c4;
-	mapping(address => bool) public whitelistClaimed;
 	
 	function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721, ERC721Enumerable) {
 		super._beforeTokenTransfer(from, to, tokenId);
@@ -53,12 +49,8 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		: "";
 	}
 	
-	function setPausedFirst(bool newState) public onlyOwner {
-		pausedFirst = newState;
-	}
-	
-	function setPausedPublic(bool newState) public onlyOwner {
-		pausedPublic = newState;
+	function setPaused(bool newState) public onlyOwner {
+		paused = newState;
 	}
 	
 	function setPausedWhitelist(bool newState) public onlyOwner {
@@ -69,10 +61,6 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		notRevealedUri = _notRevealedURI;
 	}
 	
-	function setMerkleRoot(bytes32 newMerkleRoot) public onlyOwner {
-		merkleRoot = newMerkleRoot;
-	}
-	
 	constructor(string memory _name,
 		string memory _symbol,
 		string memory _initBaseURI,
@@ -81,47 +69,39 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		setNotRevealedURI(_initNotRevealedUri);
 	}
 	
-	function mintFirst(uint numberOfTokens) public payable {
+	function mint(uint numberOfTokens) public payable {
 		uint256 totalSupply = totalSupply();
-		require(!pausedFirst, "Contract Paused");
+		require(!paused, "Contract Paused");
 		require(numberOfTokens <= MAX_PER_TRANSACTION, "Exceeded max token purchase");
 		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
-		require(isValidPrice(numberOfTokens, PRICE_FIRST), "Ether values is not correct");
-		require((balanceOf(msg.sender) == 0), "Only For First Minting");
-		
+		if ((balanceOf(msg.sender) == 0)) {
+			require(isValidPrice(numberOfTokens, PRICE_FIRST), "Ether values is not correct");
+		} else {
+			require(isValidPrice(numberOfTokens, PRICE_PUBLIC), "Ether values is not correct");
+		}
 		for (uint256 i = 0; i < numberOfTokens; i++) {
 			_safeMint(msg.sender, totalSupply + i);
 		}
 	}
 	
-	function mintPublic(uint numberOfTokens) public payable {
-		uint256 totalSupply = totalSupply();
-		require(!pausedPublic, "Contract Paused");
-		require(numberOfTokens <= MAX_PER_TRANSACTION, "Exceeded max token purchase");
-		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
-		require(isValidPrice(numberOfTokens, PRICE_PUBLIC), "Ether values is not correct");
-		
-		for (uint256 i = 0; i < numberOfTokens; i++) {
-			_safeMint(msg.sender, totalSupply + i);
-		}
-	}
-	
-	function whitelistMint(bytes32[] calldata _merkleProof, uint256 numberOfTokens) public payable {
-		require(!whitelistClaimed[msg.sender], "Address has already claimed");
-		bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
-		require(MerkleProof.verify(_merkleProof, merkleRoot, leaf), "Invalid Proof");
-		whitelistClaimed[msg.sender] = true;
+	function whitelistMint(uint256 numberOfTokens) public payable {
 		uint256 totalSupply = totalSupply();
 		require(!pausedWhitelist, "Whitelist Paused");
 		require(numberOfTokens <= MAX_PER_TRANSACTION, "Exceeded max token purchase");
 		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
-		require(isValidPrice(numberOfTokens, PRICE_PUBLIC), "Ether values is not correct");
-		
+		require(isValidPrice(numberOfTokens, PRICE_FIRST), "Ether values is not correct");
 		for (uint256 i = 0; i < numberOfTokens; i++) {
 			_safeMint(msg.sender, totalSupply + i);
 		}
 	}
 	
+	function reserve(uint256 numberOfTokens) public onlyOwner {
+		uint totalSupply = totalSupply();
+		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
+		for (uint256 i = 0; i < numberOfTokens; i++) {
+			_safeMint(msg.sender, totalSupply + i);
+		}
+	}
 	
 	function isValidPrice(uint256 _amount, uint256 _price) internal returns (bool){
 		uint256 totalValue = _price + (0.06 ether * (_amount - 1));

@@ -74,8 +74,8 @@
       ]
     },
     "C:\\Users\\rinco\\Documents\\GitHub\\nft\\metasaurs-project\\test-contract\\contracts\\TestContract.sol": {
-      "lastModificationDate": 1639450108325,
-      "contentHash": "f55a0324740921fc8b4e4010a7f56ea4",
+      "lastModificationDate": 1639583291806,
+      "contentHash": "5b066cfaa7c78fe36022a0485766ac69",
       "sourceName": "contracts/TestContract.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -103,8 +103,7 @@
       "imports": [
         "@openzeppelin/contracts/access/Ownable.sol",
         "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol",
-        "@openzeppelin/contracts/utils/Strings.sol",
-        "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol"
+        "@openzeppelin/contracts/utils/Strings.sol"
       ],
       "versionPragmas": [
         "^0.8.0"

@@ -13,7 +13,7 @@ async function main() {
 	console.log("Account balance:", (await deployer.getBalance()).toString()); // Wei
 	
 	// Start deployment, returning a promise that resolves a contract object
-	const contract = await contractFactory.deploy("TestContract", "TC", "ipfs://xxxxxx/", "www.not.revealed.test"); // instance of the contract
+	const contract = await contractFactory.deploy("TestContract", "T1", "ipfs://xxxxxx/", "https://gateway.pinata.cloud/ipfs/QmZUckbA79JHSAKJPyUrQrcoG7vffrpWaP3UNCPKYs3rYs"); // instance of the contract
 
 	console.log("Contract deployed to the address: ")
 	console.log(colors.green(contract.address))
