@@ -74,11 +74,7 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		require(!paused, "Contract Paused");
 		require(numberOfTokens <= MAX_PER_TRANSACTION, "Exceeded max token purchase");
 		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
-		if ((balanceOf(msg.sender) == 0)) {
-			require(isValidPrice(numberOfTokens, PRICE_FIRST), "Ether values is not correct");
-		} else {
-			require(isValidPrice(numberOfTokens, PRICE_PUBLIC), "Ether values is not correct");
-		}
+		require(PRICE_PUBLIC * numberOfTokens <= msg.value, "Ether value sent is not correct");
 		for (uint256 i = 0; i < numberOfTokens; i++) {
 			_safeMint(msg.sender, totalSupply + i);
 		}
