@@ -97,13 +97,19 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
 		require(isValidPrice(numberOfTokens, PRICE_FIRST), "Ether values is not correct");
 		require((recoverHash(hash, _signature) == signer), "Invalid Signature");
+		require((recoverData(msg.sender, _signature) == msg.sender), "Invalid Address");
 		for (uint256 i = 0; i < numberOfTokens; i++) {
 			_safeMint(msg.sender, totalSupply + i);
 		}
 	}
 	
-	function recoverHash(bytes32 hash, bytes memory signature) internal pure returns (address _signer) {
+	function recoverHash(bytes32 hash, bytes memory signature) public pure returns (address _signer) {
 		return hash.recover(signature);
+	}
+	
+	function recoverData(address sender, bytes calldata _signature) public pure returns (address _data) {
+		bytes32 msgHash = keccak256(abi.encode(sender));
+		return msgHash.toEthSignedMessageHash().recover(_signature);
 	}
 	
 	function reserve(uint256 numberOfTokens) public onlyOwner {
