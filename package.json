@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "rinkeby": "npx hardhat run scripts/deploy.js --network rinkeby",
+    "deployMain": "npx hardhat run scripts/deploy.js --network mainnet",
     "compile": "npx hardhat compile"
   },
   "author": "Milton Rincon",
