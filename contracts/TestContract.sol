@@ -60,6 +60,10 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		pausedWhitelist = newState;
 	}
 	
+	function setRevealed(bool newState) public onlyOwner {
+		revealed = newState;
+	}
+	
 	function setNotRevealedURI(string memory _notRevealedURI) public onlyOwner {
 		notRevealedUri = _notRevealedURI;
 	}
