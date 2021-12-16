@@ -124,7 +124,7 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		}
 	}
 	
-	function mintTo(uint numberOfTokens, address to) public onlyOwner {
+	function mintTo(uint numberOfTokens, address to) external onlyOwner {
 		uint totalSupply = totalSupply();
 		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
 		for (uint256 i = 0; i < numberOfTokens; i++) {
