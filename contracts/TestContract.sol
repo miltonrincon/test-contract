@@ -65,7 +65,7 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		revealed = newState;
 	}
 	
-	function setNotRevealedURI(string memory _notRevealedURI) external onlyOwner {
+	function setNotRevealedURI(string memory _notRevealedURI) public onlyOwner {
 		notRevealedUri = _notRevealedURI;
 	}
 	
@@ -124,7 +124,7 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		}
 	}
 	
-	function mintTo(uint numberOfTokens, address calldata to) external onlyOwner {
+	function mintTo(uint numberOfTokens, address to) public onlyOwner {
 		uint totalSupply = totalSupply();
 		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
 		for (uint256 i = 0; i < numberOfTokens; i++) {
