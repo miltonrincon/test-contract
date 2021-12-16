@@ -3,7 +3,7 @@
  */
 require('dotenv').config();
 require('@nomiclabs/hardhat-ethers');
-const {METAMASK_PRIVATE_KEY, RINKEBY_API_URL} = process.env
+const {METAMASK_PRIVATE_KEY, RINKEBY_API_URL, PROD_METAMASK_PRIVATE_KEY, PROD_API_URL} = process.env
 module.exports = {
   solidity: {
     version: "0.8.0",
@@ -23,5 +23,10 @@ module.exports = {
       gas: "auto",
       gasPrice: "auto"
     },
+    mainnet: {
+      url: PROD_API_URL,
+      accounts: [`0x${PROD_METAMASK_PRIVATE_KEY}`],
+      gasPrice: 65000000000
+    }
   }
 };
