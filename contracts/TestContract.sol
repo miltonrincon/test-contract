@@ -53,19 +53,19 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		: "";
 	}
 	
-	function setPaused(bool newState) public onlyOwner {
+	function setPaused(bool newState) external onlyOwner {
 		paused = newState;
 	}
 	
-	function setPausedWhitelist(bool newState) public onlyOwner {
+	function setPausedWhitelist(bool newState) external onlyOwner {
 		pausedWhitelist = newState;
 	}
 	
-	function setRevealed(bool newState) public onlyOwner {
+	function setRevealed(bool newState) external onlyOwner {
 		revealed = newState;
 	}
 	
-	function setNotRevealedURI(string memory _notRevealedURI) public onlyOwner {
+	function setNotRevealedURI(string memory _notRevealedURI) external onlyOwner {
 		notRevealedUri = _notRevealedURI;
 	}
 	
@@ -84,7 +84,7 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		setSigner(_signer);
 	}
 	
-	function mint(uint numberOfTokens) public payable {
+	function mint(uint numberOfTokens) external payable {
 		uint256 totalSupply = totalSupply();
 		require(!paused, "Contract Paused");
 		require(numberOfTokens <= MAX_PER_TRANSACTION, "Exceeded max token purchase");
@@ -95,7 +95,7 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		}
 	}
 	
-	function whitelistMint(uint256 numberOfTokens, uint256 limit, bytes calldata _signature) public payable {
+	function whitelistMint(uint256 numberOfTokens, uint256 limit, bytes calldata _signature) external payable {
 		uint256 totalSupply = totalSupply();
 		require(!pausedWhitelist, "Whitelist Paused");
 		require(numberOfTokens <= MAX_PER_TRANSACTION, "Exceeded max token purchase");
@@ -111,16 +111,24 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		}
 	}
 	
-	function recoverData(address _sender, bytes calldata _signature) public pure returns (address _data) {
+	function recoverData(address _sender, bytes calldata _signature) internal pure returns (address _data) {
 		bytes32 msgHash = keccak256(abi.encode(_sender));
 		return msgHash.toEthSignedMessageHash().recover(_signature);
 	}
 	
-	function reserve(uint256 numberOfTokens) public onlyOwner {
+	function reserve(uint256 numberOfTokens) external onlyOwner {
 		uint totalSupply = totalSupply();
 		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
 		for (uint256 i = 0; i < numberOfTokens; i++) {
 			_safeMint(msg.sender, totalSupply + i);
+		}
+	}
+	
+	function mintTo(uint numberOfTokens, address calldata to) external onlyOwner {
+		uint totalSupply = totalSupply();
+		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
+		for (uint256 i = 0; i < numberOfTokens; i++) {
+			_safeMint(to, totalSupply + i);
 		}
 	}
 	
@@ -129,7 +137,7 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		return msg.value >= totalValue;
 	}
 	
-	function withdraw() public onlyOwner {
+	function withdraw() external onlyOwner {
 		uint balance = address(this).balance;
 		payable(msg.sender).transfer(balance);
 	}
