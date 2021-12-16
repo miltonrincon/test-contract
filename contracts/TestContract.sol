@@ -90,25 +90,20 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		}
 	}
 	
-	function whitelistMint(uint256 numberOfTokens, bytes32 hash, bytes calldata _signature) public payable {
+	function whitelistMint(uint256 numberOfTokens, bytes calldata _signature) public payable {
 		uint256 totalSupply = totalSupply();
 		require(!pausedWhitelist, "Whitelist Paused");
 		require(numberOfTokens <= MAX_PER_TRANSACTION, "Exceeded max token purchase");
 		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
 		require(isValidPrice(numberOfTokens, PRICE_FIRST), "Ether values is not correct");
-		require((recoverHash(hash, _signature) == signer), "Invalid Signature");
-		require((recoverData(msg.sender, _signature) == msg.sender), "Invalid Address");
+		require((recoverData(msg.sender, _signature) == signer), "Invalid Signature");
 		for (uint256 i = 0; i < numberOfTokens; i++) {
 			_safeMint(msg.sender, totalSupply + i);
 		}
 	}
 	
-	function recoverHash(bytes32 hash, bytes memory signature) public pure returns (address _signer) {
-		return hash.recover(signature);
-	}
-	
-	function recoverData(address sender, bytes calldata _signature) public pure returns (address _data) {
-		bytes32 msgHash = keccak256(abi.encode(sender));
+	function recoverData(address _sender, bytes calldata _signature) public pure returns (address _data) {
+		bytes32 msgHash = keccak256(abi.encode(_sender));
 		return msgHash.toEthSignedMessageHash().recover(_signature);
 	}
 	
