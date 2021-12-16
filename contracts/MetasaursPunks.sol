@@ -94,7 +94,7 @@ contract MetasaursPunks is ERC721, ERC721Enumerable, Ownable {
 		}
 	}
 	
-	function whitelistMint(uint256 numberOfTokens, bytes calldata _signature) public payable {
+	function whitelistMint(uint256 numberOfTokens, uint256 limit, bytes calldata _signature) public payable {
 		uint256 totalSupply = totalSupply();
 		require(!pausedWhitelist, "Whitelist Paused");
 		require(numberOfTokens <= MAX_PER_TRANSACTION, "Exceeded max token purchase");

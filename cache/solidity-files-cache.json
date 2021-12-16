@@ -74,8 +74,8 @@
       ]
     },
     "C:\\Users\\rinco\\Documents\\GitHub\\nft\\metasaurs-project\\test-contract\\contracts\\TestContract.sol": {
-      "lastModificationDate": 1639630184647,
-      "contentHash": "8661ea934b69394d8ad0a1e8c9108ef4",
+      "lastModificationDate": 1639633979241,
+      "contentHash": "d3c02524fd89e7c59137d7c416ecd9f9",
       "sourceName": "contracts/TestContract.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -592,8 +592,8 @@
       ]
     },
     "C:\\Users\\rinco\\Documents\\GitHub\\nft\\metasaurs-project\\test-contract\\contracts\\MetasaursPunks.sol": {
-      "lastModificationDate": 1639628247767,
-      "contentHash": "b6317abb27d6804dc9f9b2966983933a",
+      "lastModificationDate": 1639631507423,
+      "contentHash": "c6f12bd76ea5c60d7dd9caee18521314",
       "sourceName": "contracts/MetasaursPunks.sol",
       "solcConfig": {
         "version": "0.8.0",

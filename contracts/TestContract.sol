@@ -19,6 +19,7 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 	uint256 public constant MAX_PER_TRANSACTION = 30;
 	uint256 public PRICE_FIRST = 0.08 ether;
 	uint256 public PRICE_PUBLIC = 0.09 ether;
+	uint256 public PRICE_SECOND = 0.06 ether;
 	address internal signer;
 	
 	function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721, ERC721Enumerable) {
@@ -99,12 +100,11 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 		require(!pausedWhitelist, "Whitelist Paused");
 		require(numberOfTokens <= MAX_PER_TRANSACTION, "Exceeded max token purchase");
 		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
-		require(isValidPrice(numberOfTokens, PRICE_FIRST), "Ether values is not correct");
 		require((recoverData(msg.sender, _signature) == signer), "Invalid Signature");
 		if ((balanceOf(msg.sender) == 0)) {
 			require(isValidPrice(numberOfTokens, PRICE_FIRST), "Ether values is not correct");
 		} else {
-			require(isValidPrice(numberOfTokens, PRICE_PUBLIC), "Ether values is not correct");
+			require(PRICE_SECOND * numberOfTokens <= msg.value, "Ether value sent is not correct");
 		}
 		for (uint256 i = 0; i < numberOfTokens; i++) {
 			_safeMint(msg.sender, totalSupply + i);
@@ -125,7 +125,7 @@ contract TestContract is ERC721, ERC721Enumerable, Ownable {
 	}
 	
 	function isValidPrice(uint256 _amount, uint256 _price) internal returns (bool){
-		uint256 totalValue = _price + (0.06 ether * (_amount - 1));
+		uint256 totalValue = _price + (PRICE_SECOND * (_amount - 1));
 		return msg.value >= totalValue;
 	}
 	
