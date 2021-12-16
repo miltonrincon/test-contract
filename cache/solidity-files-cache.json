@@ -74,8 +74,8 @@
       ]
     },
     "C:\\Users\\rinco\\Documents\\GitHub\\nft\\metasaurs-project\\test-contract\\contracts\\TestContract.sol": {
-      "lastModificationDate": 1639627869873,
-      "contentHash": "c79262224c72c2cb056f484742cce9f3",
+      "lastModificationDate": 1639630184647,
+      "contentHash": "8661ea934b69394d8ad0a1e8c9108ef4",
       "sourceName": "contracts/TestContract.sol",
       "solcConfig": {
         "version": "0.8.0",
