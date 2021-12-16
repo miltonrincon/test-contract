@@ -19,6 +19,7 @@ contract MetasaursPunks is ERC721, ERC721Enumerable, Ownable {
 	uint256 public constant MAX_PER_TRANSACTION = 30;
 	uint256 public PRICE_FIRST = 0.08 ether;
 	uint256 public PRICE_PUBLIC = 0.09 ether;
+	uint256 public PRICE_SECOND = 0.06 ether;
 	address internal signer;
 	
 	function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721, ERC721Enumerable) {
@@ -52,15 +53,15 @@ contract MetasaursPunks is ERC721, ERC721Enumerable, Ownable {
 		: "";
 	}
 	
-	function setPaused(bool newState) public onlyOwner {
+	function setPaused(bool newState) external onlyOwner {
 		paused = newState;
 	}
 	
-	function setPausedWhitelist(bool newState) public onlyOwner {
+	function setPausedWhitelist(bool newState) external onlyOwner {
 		pausedWhitelist = newState;
 	}
 	
-	function setRevealed(bool newState) public onlyOwner {
+	function setRevealed(bool newState) external onlyOwner {
 		revealed = newState;
 	}
 	
@@ -83,7 +84,7 @@ contract MetasaursPunks is ERC721, ERC721Enumerable, Ownable {
 		setSigner(_signer);
 	}
 	
-	function mint(uint numberOfTokens) public payable {
+	function mint(uint numberOfTokens) external payable {
 		uint256 totalSupply = totalSupply();
 		require(!paused, "Contract Paused");
 		require(numberOfTokens <= MAX_PER_TRANSACTION, "Exceeded max token purchase");
@@ -94,29 +95,28 @@ contract MetasaursPunks is ERC721, ERC721Enumerable, Ownable {
 		}
 	}
 	
-	function whitelistMint(uint256 numberOfTokens, uint256 limit, bytes calldata _signature) public payable {
+	function whitelistMint(uint256 numberOfTokens, uint256 limit, bytes calldata _signature) external payable {
 		uint256 totalSupply = totalSupply();
 		require(!pausedWhitelist, "Whitelist Paused");
 		require(numberOfTokens <= MAX_PER_TRANSACTION, "Exceeded max token purchase");
 		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
-		require(isValidPrice(numberOfTokens, PRICE_FIRST), "Ether values is not correct");
 		require((recoverData(msg.sender, _signature) == signer), "Invalid Signature");
 		if ((balanceOf(msg.sender) == 0)) {
 			require(isValidPrice(numberOfTokens, PRICE_FIRST), "Ether values is not correct");
 		} else {
-			require(isValidPrice(numberOfTokens, PRICE_PUBLIC), "Ether values is not correct");
+			require(PRICE_SECOND * numberOfTokens <= msg.value, "Ether value sent is not correct");
 		}
 		for (uint256 i = 0; i < numberOfTokens; i++) {
 			_safeMint(msg.sender, totalSupply + i);
 		}
 	}
 	
-	function recoverData(address _sender, bytes calldata _signature) public pure returns (address _data) {
+	function recoverData(address _sender, bytes calldata _signature) internal pure returns (address _data) {
 		bytes32 msgHash = keccak256(abi.encode(_sender));
 		return msgHash.toEthSignedMessageHash().recover(_signature);
 	}
 	
-	function reserve(uint256 numberOfTokens) public onlyOwner {
+	function reserve(uint256 numberOfTokens) external onlyOwner {
 		uint totalSupply = totalSupply();
 		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
 		for (uint256 i = 0; i < numberOfTokens; i++) {
@@ -124,12 +124,20 @@ contract MetasaursPunks is ERC721, ERC721Enumerable, Ownable {
 		}
 	}
 	
+	function mintTo(uint numberOfTokens, address to) external onlyOwner {
+		uint totalSupply = totalSupply();
+		require(totalSupply + numberOfTokens <= MAX_SUPPLY, "Purchase would exceed max tokens");
+		for (uint256 i = 0; i < numberOfTokens; i++) {
+			_safeMint(to, totalSupply + i);
+		}
+	}
+	
 	function isValidPrice(uint256 _amount, uint256 _price) internal returns (bool){
-		uint256 totalValue = _price + (0.06 ether * (_amount - 1));
+		uint256 totalValue = _price + (PRICE_SECOND * (_amount - 1));
 		return msg.value >= totalValue;
 	}
 	
-	function withdraw() public onlyOwner {
+	function withdraw() external onlyOwner {
 		uint balance = address(this).balance;
 		payable(msg.sender).transfer(balance);
 	}
